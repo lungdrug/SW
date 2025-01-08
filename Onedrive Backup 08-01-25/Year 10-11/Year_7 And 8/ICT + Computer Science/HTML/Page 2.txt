@@ -1,0 +1,6 @@
+<html>
+<head>
+<title>javaError></title>
+</head>
+<body bgcolor="BlanchedAlmond">
+<p align=center><font size=7>

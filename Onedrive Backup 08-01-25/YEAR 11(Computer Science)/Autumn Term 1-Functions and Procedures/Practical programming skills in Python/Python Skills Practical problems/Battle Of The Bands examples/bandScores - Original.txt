@@ -1,0 +1,10 @@
+Def Leppard,23
+Coldplay,17
+The Smiths,29
+Guns n Roses,15
+Jay Z,3
+David Bowie,32
+Two Door Cinema Club,21
+Baby Metal,9
+Kaiser Chiefs,30
+Adele,28

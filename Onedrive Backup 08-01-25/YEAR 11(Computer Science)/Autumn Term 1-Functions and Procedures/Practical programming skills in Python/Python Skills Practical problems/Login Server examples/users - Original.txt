@@ -1,0 +1,15 @@
+admin,R00t
+
+dave,Pa55word
+
+zoe,Zo3
+
+groot,Iamgr00t
+
+ascii,7Bit
+
+unicode,16Bit
+
+ph01,pMh01
+rh02,rUh02
+fh03,Fl0
