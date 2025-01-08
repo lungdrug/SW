@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LungDrug's School Work</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        ul {
+            list-style-type: none;
+        }
+        li {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Download Documents</h1>
+    <ul id="document-list"></ul>
+    <script>
+        async function fetchDocuments() {
+            const response = await fetch('https://api.github.com/repos/lungdrug/SW/contents/');
+            const data = await response.json();
+            const documentList = document.getElementById('document-list');
+
+            data.forEach(item => {
+                if (item.type === 'dir') {
+                    fetchFolderContents(item.path);
+                } else if (item.type === 'file') {
+                    addDocumentLink(item.path, item.name);
+                }
+            });
+        }
+
+        async function fetchFolderContents(folderPath) {
+            const response = await fetch(`https://api.github.com/repos/lungdrug/SW/contents/${folderPath}`);
+            const data = await response.json();
+            data.forEach(item => {
+                if (item.type === 'file') {
+                    addDocumentLink(item.path, item.name);
+                }
+            });
+        }
+
+        function addDocumentLink(filePath, fileName) {
+            const documentList = document.getElementById('document-list');
+            const listItem = document.createElement('li');
+            const link = document.createElement('a');
+            link.href = `https://raw.githubusercontent.com/lungdrug/SW/main/${filePath}`;
+            link.download = fileName;
+            link.textContent = `Download ${fileName}`;
+            listItem.appendChild(link);
+            documentList.appendChild(listItem);
+        }
+
+        fetchDocuments();
+    </script>
+</body>
+</html>
