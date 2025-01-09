@@ -102,7 +102,6 @@
         const repoOwner = 'lungdrug';
         const repoName = 'SW';
         const repoUrl = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/`;
-        const token = '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'; // Updated with your personal access token
         const contentContainer = document.getElementById('content');
         const documentSections = document.getElementById('document-sections');
         const loadingMessage = document.getElementById('loading-message');
@@ -110,11 +109,7 @@
         async function fetchContents(path = '') {
             const url = path ? `${repoUrl}${path}` : repoUrl;
             console.log(`Fetching contents from: ${url}`);
-            const response = await fetch(url, {
-                headers: {
-                    'Authorization': `token ${token}`
-                }
-            });
+            const response = await fetch(url);
             if (!response.ok) {
                 console.error(`HTTP error! status: ${response.status}`);
                 throw new Error(`HTTP error! status: ${response.status}`);
