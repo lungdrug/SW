@@ -102,7 +102,7 @@
         const repoOwner = 'lungdrug';
         const repoName = 'SW';
         const repoUrl = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/`;
-        const token = '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'; // Replace with your personal access token
+        const token = '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'; // Updated with your personal access token
         const contentContainer = document.getElementById('content');
         const documentSections = document.getElementById('document-sections');
         const loadingMessage = document.getElementById('loading-message');
@@ -115,7 +115,10 @@
                     'Authorization': `token ${token}`
                 }
             });
-            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            if (!response.ok) {
+                console.error(`HTTP error! status: ${response.status}`);
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
             return await response.json();
         }
 
