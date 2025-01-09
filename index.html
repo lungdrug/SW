@@ -4,9 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Website with Login</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Roboto', sans-serif;
             margin: 0;
             padding: 20px;
             background-color: #000;
@@ -16,6 +17,7 @@
         h1 {
             text-align: center;
             color: #00ff00;
+            animation: fadeIn 1s ease-in-out;
         }
         .login-container, .content-container {
             max-width: 400px;
@@ -24,6 +26,7 @@
             background-color: #121212;
             border-radius: 10px;
             box-shadow: 0 0 10px #00ff00;
+            animation: slideIn 1s ease-in-out;
         }
         .login-container input[type="text"],
         .login-container input[type="password"],
@@ -36,6 +39,7 @@
             border-radius: 5px;
             background-color: #1c1c1c;
             color: #fff;
+            transition: all 0.3s ease;
         }
         .login-container input[type="password"]:focus,
         .content-container input[type="password"]:focus {
@@ -57,6 +61,7 @@
             color: #000;
             font-weight: bold;
             cursor: pointer;
+            transition: background-color 0.3s ease;
         }
         .login-container input[type="submit"]:hover,
         .content-container input[type="submit"]:hover {
@@ -66,24 +71,28 @@
             text-align: center;
             margin: 20px 0;
             color: #00ff00;
+            animation: fadeIn 1s ease-in-out;
         }
         .welcome-message {
             text-align: center;
             margin: 20px 0;
             color: #00ff00;
             font-size: 1.2em;
+            animation: fadeIn 1s ease-in-out;
         }
-        .folder-link, .document-link {
+        .folder-link, .document-link, .back-button {
             display: block;
             margin: 10px 0;
             color: #00ff00;
             text-decoration: none;
             font-weight: bold;
-            transition: transform 0.3s;
+            transition: transform 0.3s, color 0.3s;
+            cursor: pointer;
         }
-        .folder-link:hover, .document-link:hover {
+        .folder-link:hover, .document-link:hover, .back-button:hover {
             text-decoration: underline;
             transform: scale(1.1);
+            color: #00cc00;
         }
         .rain {
             position: fixed;
@@ -117,6 +126,24 @@
                 opacity: 1;
             }
         }
+        @keyframes slideIn {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
         footer {
             text-align: center;
             margin-top: 20px;
@@ -142,6 +169,7 @@
         <div class="welcome-message" id="welcome-message"></div>
         <div id="loading-message" class="loading-message">Loading documents, please wait...</div>
         <input type="search" id="search-bar" placeholder="Search documents..." oninput="filterDocuments()">
+        <a class="back-button" id="back-button" style="display: none;">← Back</a>
         <div id="document-sections"></div>
     </div>
     <div class="rain"></div>
@@ -150,6 +178,7 @@
         const storedUsername = 'lungdrug';
         const storedPasswordHash = 'cd564d37d67d792d383f623646f95909455156d28cf7927826f2f1f0717dc569';
         let allDocuments = [];
+        let currentPath = '';
 
         // SHA-256 encryption function
         async function sha256(message) {
@@ -188,6 +217,7 @@
         const repoUrl = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/`;
         const documentSections = document.getElementById('document-sections');
         const loadingMessage = document.getElementById('loading-message');
+        const backButton = document.getElementById('back-button');
 
         async function fetchContents(path = '') {
             const url = path ? `${repoUrl}${path}` : repoUrl;
@@ -208,13 +238,25 @@
                 console.log(`Contents of ${path || 'root'}:`, contents);
                 allDocuments = allDocuments.concat(contents);
                 documentSections.innerHTML = '';
+                if (path) {
+                    backButton.style.display = 'block';
+                    backButton.onclick = () => goBack(path);
+                } else {
+                    backButton.style.display = 'none';
+                }
                 contents.forEach(item => documentSections.appendChild(createLink(item, path)));
+                currentPath = path;
                 showLoading(false);
             } catch (error) {
                 console.error('Error fetching documents:', error);
                 showStatusMessage('Failed to load documents');
                 showLoading(false);
             }
+        }
+
+        function goBack(path) {
+            const parentPath = path.split('/').slice(0, -2).join('/');
+            loadFolder(parentPath ? `${parentPath}/` : '');
         }
 
         function showLoading(show) {
@@ -234,11 +276,7 @@
                 link.className = 'folder-link';
                 link.onclick = async (e) => {
                     e.preventDefault();
-                    const subContents = await fetchContents(`${parentPath}${item.name}/`);
-                    subContents.sort((a, b) => a.name.localeCompare(b.name)); // Sort by name
-                    allDocuments = allDocuments.concat(subContents);
-                    documentSections.innerHTML = '';
-                    subContents.forEach(subItem => documentSections.appendChild(createLink(subItem, `${parentPath}${item.name}/`)));
+                    loadFolder(`${parentPath}${item.name}/`);
                 };
             } else if (item.type === 'file') {
                 link.href = `https://raw.githubusercontent.com/${repoOwner}/${repoName}/main/${parentPath}${item.name}`;
