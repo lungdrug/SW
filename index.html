@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document Download Page</title>
+    <title>Login Page</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -20,56 +20,50 @@
             color: #00ff00;
         }
 
-        .folder-link,
-        .document-link {
-            display: block;
-            margin: 10px 0;
-            color: #00ff00;
-            text-decoration: none;
-            font-weight: bold;
-            transition: transform 0.3s;
+        .login-container {
+            max-width: 400px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #121212;
+            border-radius: 10px;
+            box-shadow: 0 0 10px #00ff00;
         }
 
-        .folder-link:hover,
-        .document-link:hover {
-            text-decoration: underline;
-            transform: scale(1.1);
-        }
-
-        .content-container {
-            display: none;
-        }
-
-        .content-container.visible {
-            display: block;
-        }
-
-        .rain {
-            position: fixed;
-            top: 0;
-            left: 0;
+        .login-container input[type="text"],
+        .login-container input[type="password"] {
             width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 1;
-            background: url('rain.png') repeat top center;
-            animation: rain 0.5s linear infinite;
+            padding: 10px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 5px;
+            background-color: #1c1c1c;
+            color: #fff;
         }
 
-        @keyframes rain {
-            0% {
-                background-position: 0 0;
-            }
-
-            100% {
-                background-position: 0 100%;
-            }
+        .login-container input[type="password"]:focus {
+            animation: glowing 1.5s infinite;
         }
 
-        .loading-message {
-            text-align: center;
-            margin: 20px 0;
-            color: #00ff00;
+        @keyframes glowing {
+            0% { box-shadow: 0 0 5px #00ff00; }
+            50% { box-shadow: 0 0 20px #00ff00; }
+            100% { box-shadow: 0 0 5px #00ff00; }
+        }
+
+        .login-container input[type="submit"] {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 5px;
+            background-color: #00ff00;
+            color: #000;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .login-container input[type="submit"]:hover {
+            background-color: #00cc00;
         }
 
         .status-message {
@@ -89,79 +83,48 @@
 </head>
 
 <body>
-    <h1>Download Documents</h1>
-    <div id="content" class="content-container visible">
-        <div id="loading-message" class="loading-message">Loading documents, please wait...</div>
-        <div id="document-sections"></div>
+    <h1>Login</h1>
+    <div class="login-container">
+        <form id="login-form">
+            <label for="username">Username:</label>
+            <input type="text" id="username" name="username" required>
+
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" required>
+
+            <input type="submit" value="Login">
+        </form>
+        <div class="status-message" id="status-message"></div>
     </div>
-    <div class="rain"></div>
-    <div class="status-message" id="status-message"></div>
     <footer>@lungdrug</footer>
 
     <script>
-        const repoOwner = 'lungdrug';
-        const repoName = 'SW';
-        const repoUrl = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/`;
-        const contentContainer = document.getElementById('content');
-        const documentSections = document.getElementById('document-sections');
-        const loadingMessage = document.getElementById('loading-message');
-
-        async function fetchContents(path = '') {
-            const url = path ? `${repoUrl}${path}` : repoUrl;
-            console.log(`Fetching contents from: ${url}`);
-            const response = await fetch(url);
-            if (!response.ok) {
-                console.error(`HTTP error! status: ${response.status}`);
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            return await response.json();
+        // SHA-256 encryption function
+        async function sha256(message) {
+            const msgBuffer = new TextEncoder().encode(message);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+            return hashHex;
         }
 
-        function showLoading(show) {
-            loadingMessage.style.display = show ? 'block' : 'none';
-        }
+        document.getElementById('login-form').addEventListener('submit', async function (event) {
+            event.preventDefault();
 
-        function showStatusMessage(message) {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const encryptedPassword = await sha256(password);
+            const storedPassword = 'cd564d37d67d792d383f623646f95909455156d28cf7927826f2f1f0717dc569';
+
             const statusMessage = document.getElementById('status-message');
-            statusMessage.textContent = message;
-        }
-
-        function createLink(item, parentPath = '') {
-            const link = document.createElement('a');
-            if (item.type === 'dir') {
-                link.href = '#';
-                link.textContent = `Go to ${item.name}`;
-                link.className = 'folder-link';
-                link.onclick = (e) => {
-                    e.preventDefault();
-                    loadFolder(`${parentPath}${item.name}/`);
-                };
-            } else if (item.type === 'file') {
-                link.href = `https://raw.githubusercontent.com/${repoOwner}/${repoName}/main/${parentPath}${item.name}`;
-                link.download = item.name;
-                link.textContent = `Download ${item.name}`;
-                link.className = 'document-link';
+            if (encryptedPassword === storedPassword) {
+                statusMessage.textContent = 'Login successful!';
+                statusMessage.style.color = '#00ff00';
+                // Redirect to the main page or perform other actions on successful login
+            } else {
+                statusMessage.textContent = 'Invalid username or password!';
+                statusMessage.style.color = '#ff0000';
             }
-            return link;
-        }
-
-        async function loadFolder(path = '') {
-            showLoading(true);
-            try {
-                const contents = await fetchContents(path);
-                console.log(`Contents of ${path || 'root'}:`, contents);
-                documentSections.innerHTML = '';
-                contents.forEach(item => documentSections.appendChild(createLink(item, path)));
-                showLoading(false);
-            } catch (error) {
-                console.error('Error fetching documents:', error);
-                showStatusMessage('Failed to load documents');
-                showLoading(false);
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            loadFolder();
         });
     </script>
 </body>
