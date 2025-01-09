@@ -47,7 +47,7 @@
             100% { box-shadow: 0 0 5px #00ff00; }
         }
         .login-container input[type="submit"],
-        .content-container input[type="submit"] {
+        .content-container input[type="submit"], .content-container input[type="search"] {
             width: 100%;
             padding: 10px;
             margin: 10px 0;
@@ -128,6 +128,7 @@
     <div class="content-container" id="content-container" style="display: none;">
         <div class="welcome-message" id="welcome-message"></div>
         <div id="loading-message" class="loading-message">Loading documents, please wait...</div>
+        <input type="search" id="search-bar" placeholder="Search documents..." oninput="filterDocuments()">
         <div id="document-sections"></div>
     </div>
     <div class="rain"></div>
@@ -217,6 +218,7 @@
             showLoading(true);
             try {
                 const contents = await fetchContents(path);
+                contents.sort((a, b) => a.name.localeCompare(b.name)); // Sort by name
                 console.log(`Contents of ${path || 'root'}:`, contents);
                 documentSections.innerHTML = '';
                 contents.forEach(item => documentSections.appendChild(createLink(item, path)));
@@ -225,6 +227,19 @@
                 console.error('Error fetching documents:', error);
                 showStatusMessage('Failed to load documents');
                 showLoading(false);
+            }
+        }
+
+        function filterDocuments() {
+            const searchTerm = document.getElementById('search-bar').value.toLowerCase();
+            const links = documentSections.getElementsByTagName('a');
+            for (const link of links) {
+                const text = link.textContent.toLowerCase();
+                if (text.includes(searchTerm)) {
+                    link.style.display = '';
+                } else {
+                    link.style.display = 'none';
+                }
             }
         }
     </script>
