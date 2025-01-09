@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -14,14 +13,11 @@
             color: #fff;
             overflow-x: hidden;
         }
-
         h1 {
             text-align: center;
             color: #00ff00;
         }
-
-        .login-container,
-        .content-container {
+        .login-container, .content-container {
             max-width: 400px;
             margin: 50px auto;
             padding: 20px;
@@ -29,7 +25,6 @@
             border-radius: 10px;
             box-shadow: 0 0 10px #00ff00;
         }
-
         .login-container input[type="text"],
         .login-container input[type="password"],
         .content-container input[type="text"],
@@ -42,18 +37,15 @@
             background-color: #1c1c1c;
             color: #fff;
         }
-
         .login-container input[type="password"]:focus,
         .content-container input[type="password"]:focus {
             animation: glowing 1.5s infinite;
         }
-
         @keyframes glowing {
             0% { box-shadow: 0 0 5px #00ff00; }
             50% { box-shadow: 0 0 20px #00ff00; }
             100% { box-shadow: 0 0 5px #00ff00; }
         }
-
         .login-container input[type="submit"],
         .content-container input[type="submit"] {
             width: 100%;
@@ -66,27 +58,22 @@
             font-weight: bold;
             cursor: pointer;
         }
-
         .login-container input[type="submit"]:hover,
         .content-container input[type="submit"]:hover {
             background-color: #00cc00;
         }
-
         .status-message {
             text-align: center;
             margin: 20px 0;
             color: #00ff00;
         }
-
         .welcome-message {
             text-align: center;
             margin: 20px 0;
             color: #00ff00;
             font-size: 1.2em;
         }
-
-        .folder-link,
-        .document-link {
+        .folder-link, .document-link {
             display: block;
             margin: 10px 0;
             color: #00ff00;
@@ -94,13 +81,10 @@
             font-weight: bold;
             transition: transform 0.3s;
         }
-
-        .folder-link:hover,
-        .document-link:hover {
+        .folder-link:hover, .document-link:hover {
             text-decoration: underline;
             transform: scale(1.1);
         }
-
         .rain {
             position: fixed;
             top: 0;
@@ -112,17 +96,14 @@
             background: url('rain.png') repeat top center;
             animation: rain 0.5s linear infinite;
         }
-
         @keyframes rain {
             0% {
                 background-position: 0 0;
             }
-
             100% {
                 background-position: 0 100%;
             }
         }
-
         footer {
             text-align: center;
             margin-top: 20px;
@@ -132,31 +113,25 @@
         }
     </style>
 </head>
-
 <body>
     <h1 id="page-title">Login</h1>
     <div class="login-container" id="login-container">
         <form id="login-form">
             <label for="username">Username:</label>
             <input type="text" id="username" name="username" required>
-
             <label for="password">Password:</label>
             <input type="password" id="password" name="password" required>
-
             <input type="submit" value="Login">
         </form>
         <div class="status-message" id="status-message"></div>
     </div>
-
     <div class="content-container" id="content-container" style="display: none;">
         <div class="welcome-message" id="welcome-message"></div>
         <div id="loading-message" class="loading-message">Loading documents, please wait...</div>
         <div id="document-sections"></div>
     </div>
-
     <div class="rain"></div>
     <footer>@lungdrug</footer>
-
     <script>
         const storedUsername = 'lungdrug';
         const storedPasswordHash = 'cd564d37d67d792d383f623646f95909455156d28cf7927826f2f1f0717dc569';
@@ -254,5 +229,4 @@
         }
     </script>
 </body>
-
 </html>
