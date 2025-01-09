@@ -11,21 +11,28 @@
             padding: 0;
             background-color: #000;
             color: #fff;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
+            overflow-x: hidden;
         }
         .login-container, .content-container {
-            background-color: #121212;
+            background-color: rgba(18, 18, 18, 0.8);
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0, 255, 0, 0.1);
+            position: relative;
+            z-index: 2;
         }
         .login-container {
             display: flex;
             flex-direction: column;
             align-items: center;
+        }
+        .background-video {
+            position: fixed;
+            right: 0;
+            bottom: 0;
+            min-width: 100%;
+            min-height: 100%;
+            z-index: 1;
         }
         h1 {
             text-align: center;
@@ -53,11 +60,13 @@
             padding: 15px;
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0, 255, 0, 0.1);
-            transition: transform 0.2s, box-shadow 0.2s;
+            transition: transform 0.3s, box-shadow 0.3s, opacity 0.3s;
+            opacity: 0;
+            transform: translateY(20px);
         }
-        .folder-section:hover {
-            transform: scale(1.05);
-            box-shadow: 0 0 15px rgba(0, 255, 0, 0.3);
+        .folder-section.visible {
+            opacity: 1;
+            transform: translateY(0);
         }
         .folder-section h2 {
             border-bottom: 2px solid #00ff00;
@@ -80,9 +89,16 @@
         a:hover {
             text-decoration: underline;
         }
+        .fallback-background {
+            display: none;
+        }
     </style>
 </head>
 <body>
+    <video autoplay muted loop class="background-video" onerror="videoError()">
+        <source src="https://raw.githubusercontent.com/lungdrug/SW/main/video.mp4" type="video/mp4">
+    </video>
+    <div class="fallback-background" id="fallback-background"></div>
     <div class="login-container" id="login-container">
         <h1>Login</h1>
         <input type="password" id="password-input" placeholder="Enter password">
@@ -97,6 +113,12 @@
     <script>
         const correctPasswordHash = 'cd564d37d67d792d383f623646f95909455156d28cf7927826f2f1f0717dc569';
 
+        function videoError() {
+            document.querySelector('.background-video').style.display = 'none';
+            document.getElementById('fallback-background').style.display = 'block';
+            document.body.style.backgroundColor = '#000';
+        }
+
         async function checkPassword() {
             const enteredPassword = document.getElementById('password-input').value;
             const hashBuffer = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(enteredPassword));
@@ -106,6 +128,7 @@
             if (hashHex === correctPasswordHash) {
                 document.getElementById('login-container').style.display = 'none';
                 document.getElementById('content-container').style.display = 'block';
+                document.body.style.overflowY = 'auto';
                 fetchDocuments();
             } else {
                 alert('Incorrect password. Please try again.');
@@ -125,6 +148,8 @@
                     addDocumentLink(item.path, item.name, documentSections);
                 }
             }
+
+            animateSections();
         }
 
         async function fetchFolderContents(folderPath, documentSections) {
@@ -162,6 +187,19 @@
             listItem.appendChild(link);
             parentElement.appendChild(listItem);
         }
+
+        function animateSections() {
+            const sections = document.querySelectorAll('.folder-section');
+            sections.forEach((section, index) => {
+                setTimeout(() => {
+                    section.classList.add('visible');
+                }, index * 200);
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.body.style.overflowX = 'hidden';
+        });
     </script>
 </body>
 </html>
