@@ -60,13 +60,6 @@
             padding: 15px;
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0, 255, 0, 0.1);
-            transition: transform 0.3s, box-shadow 0.3s, opacity 0.3s;
-            opacity: 0;
-            transform: translateY(20px);
-        }
-        .folder-section.visible {
-            opacity: 1;
-            transform: translateY(0);
         }
         .folder-section h2 {
             border-bottom: 2px solid #00ff00;
@@ -92,6 +85,23 @@
         .fallback-background {
             display: none;
         }
+        .loading-message {
+            text-align: center;
+            margin: 20px 0;
+            color: #00ff00;
+        }
+        .status-message {
+            text-align: center;
+            margin: 20px 0;
+            color: #00ff00;
+        }
+        footer {
+            text-align: center;
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #121212;
+            color: #00ff00;
+        }
     </style>
 </head>
 <body>
@@ -107,8 +117,13 @@
 
     <div class="content-container" id="content-container" style="display: none;">
         <h1>Download Documents</h1>
+        <div class="loading-message" id="loading-message">Loading documents, please wait...</div>
         <div id="document-sections"></div>
     </div>
+    
+    <div class="status-message" id="status-message"></div>
+
+    <footer>@lungdrug</footer>
 
     <script>
         const correctPasswordHash = 'cd564d37d67d792d383f623646f95909455156d28cf7927826f2f1f0717dc569';
@@ -125,42 +140,60 @@
             const hashArray = Array.from(new Uint8Array(hashBuffer));
             const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 
+            const statusMessage = document.getElementById('status-message');
             if (hashHex === correctPasswordHash) {
                 document.getElementById('login-container').style.display = 'none';
                 document.getElementById('content-container').style.display = 'block';
                 document.body.style.overflowY = 'auto';
+                statusMessage.textContent = 'Login Success';
                 fetchDocuments();
             } else {
-                alert('Incorrect password. Please try again.');
+                statusMessage.textContent = 'Login Failed';
             }
         }
 
         async function fetchDocuments() {
-            const response = await fetch('https://api.github.com/repos/lungdrug/SW/contents/');
-            const data = await response.json();
-            const documentSections = document.getElementById('document-sections');
-            documentSections.innerHTML = '';
-
-            for (const item of data) {
-                if (item.type === 'dir') {
-                    await fetchFolderContents(item.path, documentSections);
-                } else if (item.type === 'file') {
-                    addDocumentLink(item.path, item.name, documentSections);
+            try {
+                const response = await fetch('https://api.github.com/repos/lungdrug/SW/contents/');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
                 }
-            }
+                const data = await response.json();
+                console.log('Root directory contents:', data);
+                const documentSections = document.getElementById('document-sections');
+                documentSections.innerHTML = '';
 
-            animateSections();
+                for (const item of data) {
+                    if (item.type === 'dir') {
+                        await fetchFolderContents(item.path, documentSections);
+                    } else if (item.type === 'file') {
+                        addDocumentLink(item.path, item.name, documentSections);
+                    }
+                }
+
+                document.getElementById('loading-message').style.display = 'none';
+            } catch (error) {
+                console.error('Error fetching documents:', error);
+            }
         }
 
         async function fetchFolderContents(folderPath, documentSections) {
-            const response = await fetch(`https://api.github.com/repos/lungdrug/SW/contents/${folderPath}`);
-            const data = await response.json();
-            addFolderSection(folderPath, folderPath.split('/').pop(), data, documentSections);
-
-            for (const item of data) {
-                if (item.type === 'dir') {
-                    await fetchFolderContents(item.path, documentSections);
+            try {
+                const response = await fetch(`https://api.github.com/repos/lungdrug/SW/contents/${folderPath}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
                 }
+                const data = await response.json();
+                console.log(`Contents of ${folderPath}:`, data);
+                addFolderSection(folderPath, folderPath.split('/').pop(), data, documentSections);
+
+                for (const item of data) {
+                    if (item.type === 'dir') {
+                        await fetchFolderContents(item.path, documentSections);
+                    }
+                }
+            } catch (error) {
+                console.error(`Error fetching folder contents for ${folderPath}:`, error);
             }
         }
 
@@ -186,15 +219,6 @@
             link.textContent = `Download ${fileName}`;
             listItem.appendChild(link);
             parentElement.appendChild(listItem);
-        }
-
-        function animateSections() {
-            const sections = document.querySelectorAll('.folder-section');
-            sections.forEach((section, index) => {
-                setTimeout(() => {
-                    section.classList.add('visible');
-                }, index * 200);
-            });
         }
 
         document.addEventListener('DOMContentLoaded', () => {
