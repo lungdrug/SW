@@ -112,6 +112,7 @@
             color: #00ff00;
         }
     </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/docx-preview/1.4.0/docx-preview.min.js"></script>
 </head>
 <body>
     <h1 id="page-title">Login</h1>
@@ -136,6 +137,7 @@
     <script>
         const storedUsername = 'lungdrug';
         const storedPasswordHash = 'cd564d37d67d792d383f623646f95909455156d28cf7927826f2f1f0717dc569';
+        let allDocuments = [];
 
         // SHA-256 encryption function
         async function sha256(message) {
@@ -186,6 +188,23 @@
             return await response.json();
         }
 
+        async function loadFolder(path = '') {
+            showLoading(true);
+            try {
+                const contents = await fetchContents(path);
+                contents.sort((a, b) => a.name.localeCompare(b.name)); // Sort by name
+                console.log(`Contents of ${path || 'root'}:`, contents);
+                allDocuments = allDocuments.concat(contents);
+                documentSections.innerHTML = '';
+                contents.forEach(item => documentSections.appendChild(createLink(item, path)));
+                showLoading(false);
+            } catch (error) {
+                console.error('Error fetching documents:', error);
+                showStatusMessage('Failed to load documents');
+                showLoading(false);
+            }
+        }
+
         function showLoading(show) {
             loadingMessage.style.display = show ? 'block' : 'none';
         }
@@ -201,33 +220,27 @@
                 link.href = '#';
                 link.textContent = `Go to ${item.name}`;
                 link.className = 'folder-link';
-                link.onclick = (e) => {
+                link.onclick = async (e) => {
                     e.preventDefault();
-                    loadFolder(`${parentPath}${item.name}/`);
+                    const subContents = await fetchContents(`${parentPath}${item.name}/`);
+                    subContents.sort((a, b) => a.name.localeCompare(b.name)); // Sort by name
+                    allDocuments = allDocuments.concat(subContents);
+                    documentSections.innerHTML = '';
+                    subContents.forEach(subItem => documentSections.appendChild(createLink(subItem, `${parentPath}${item.name}/`)));
                 };
             } else if (item.type === 'file') {
                 link.href = `https://raw.githubusercontent.com/${repoOwner}/${repoName}/main/${parentPath}${item.name}`;
                 link.download = item.name;
                 link.textContent = `Download ${item.name}`;
                 link.className = 'document-link';
+                if (item.name.endsWith('.docx')) {
+                    link.onclick = (e) => {
+                        e.preventDefault();
+                        previewDocx(link.href);
+                    };
+                }
             }
             return link;
-        }
-
-        async function loadFolder(path = '') {
-            showLoading(true);
-            try {
-                const contents = await fetchContents(path);
-                contents.sort((a, b) => a.name.localeCompare(b.name)); // Sort by name
-                console.log(`Contents of ${path || 'root'}:`, contents);
-                documentSections.innerHTML = '';
-                contents.forEach(item => documentSections.appendChild(createLink(item, path)));
-                showLoading(false);
-            } catch (error) {
-                console.error('Error fetching documents:', error);
-                showStatusMessage('Failed to load documents');
-                showLoading(false);
-            }
         }
 
         function filterDocuments() {
@@ -241,6 +254,26 @@
                     link.style.display = 'none';
                 }
             }
+        }
+
+        function previewDocx(url) {
+            fetch(url)
+                .then(response => response.blob())
+                .then(blob => {
+                    const reader = new FileReader();
+                    reader.onload = function (event) {
+                        const arrayBuffer = event.target.result;
+                        const container = document.createElement('div');
+                        container.style.backgroundColor = '#fff';
+                        container.style.color = '#000';
+                        container.style.padding = '20px';
+                        container.style.borderRadius = '10px';
+                        document.body.appendChild(container);
+                        docx.renderAsync(arrayBuffer, container);
+                    };
+                    reader.readAsArrayBuffer(blob);
+                })
+                .catch(error => console.error('Error previewing .docx file:', error));
         }
     </script>
 </body>
