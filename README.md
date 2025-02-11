@@ -2,12 +2,10 @@
 
 # Checklist:
 # Unit 26
-## Ass 1: 🔨 Update Conclusion 
+## Ass 1: ✔
 ## Ass 2: 🔨
 
 
-# Unit 5
-## Ass 1: 🔨
-## Ass 2: 🔨
-## Ass 3: ✔
+# Unit 5 - Completed ✔
+
 
